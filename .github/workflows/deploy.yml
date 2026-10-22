@@ -16,8 +16,8 @@ jobs:
     name: Build and save
     if: |
       github.event.workflow_dispatch
-      || github.event.workflow_run.conclusion == 'success'
-      && !contains(github.event.commits.*.message, '[skip ci]')
+      || (github.event.workflow_run.conclusion == 'success'
+      && !contains(github.event.commits.*.message, '[skip ci]'))
     runs-on: ubuntu-latest
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
