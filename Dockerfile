@@ -4,9 +4,9 @@ WORKDIR /home/site
 
 COPY resources/ ./resources
 COPY public/ ./public
-COPY webpack.mix.js package.json package-lock.json ./
+COPY vite.config.js package.json package-lock.json ./
 
-RUN npm ci && npm run production
+RUN npm ci && npm run build
 
 FROM php:8.5-apache AS production
 
