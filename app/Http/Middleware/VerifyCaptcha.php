@@ -44,33 +44,64 @@ class VerifyCaptcha
 
     protected function verifyCaptcha(string $type, Request $request, string $secretKey): bool
     {
-        $inputName = match ($type) {
-            'hcaptcha' => 'h-captcha',
-            'recaptcha' => 'g-recaptcha',
-            'turnstile' => 'cf-turnstile',
-            default => null,
+        return match ($type) {
+            'ddos_guard' => $this->verifyDdosGuardCaptcha($request, $secretKey),
+            'hcaptcha' => $this->verifySiteCaptcha(
+                $request,
+                $secretKey,
+                'h-captcha-response',
+                'https://hcaptcha.com/siteverify',
+            ),
+            'recaptcha' => $this->verifySiteCaptcha(
+                $request,
+                $secretKey,
+                'g-recaptcha-response',
+                'https://www.google.com/recaptcha/api/siteverify',
+            ),
+            'turnstile' => $this->verifySiteCaptcha(
+                $request,
+                $secretKey,
+                'cf-turnstile-response',
+                'https://challenges.cloudflare.com/turnstile/v0/siteverify',
+            ),
+            default => false,
         };
-        $host = match ($type) {
-            'hcaptcha' => 'hcaptcha.com',
-            'recaptcha' => 'www.google.com/recaptcha/api',
-            'turnstile' => 'challenges.cloudflare.com/turnstile/v0',
-            default => null,
-        };
+    }
 
-        if ($host === null || $inputName === null) {
+    protected function verifySiteCaptcha(Request $request, string $secret, string $input, string $url): bool
+    {
+        $code = $request->input($input);
+
+        if (! is_string($code)) {
             return false;
         }
 
-        if (($code = $request->input($inputName.'-response')) === null) {
+        $response = Http::asForm()
+            ->timeout(self::TIMEOUT)
+            ->post($url, [
+                'secret' => $secret,
+                'response' => $code,
+                'remoteip' => $request->ip(),
+            ]);
+
+        return $response->successful() && $response->json('success') === true;
+    }
+
+    protected function verifyDdosGuardCaptcha(Request $request, string $privateKey): bool
+    {
+        $code = $request->input('ddg-captcha-token');
+
+        if (! is_string($code)) {
             return false;
         }
 
-        $response = Http::asForm()->timeout(self::TIMEOUT)->post('https://'.$host.'/siteverify', [
-            'secret' => $secretKey,
-            'response' => $code,
-            'remoteip' => $request->ip(),
-        ]);
+        $response = Http::asJson()
+            ->timeout(self::TIMEOUT)
+            ->post('https://captcha.ddos-guard.net/siteverify', [
+                'private_key' => $privateKey,
+                'response' => $code,
+            ]);
 
-        return $response->successful() && $response->json('success');
+        return $response->successful() && $response->json('success') === true;
     }
 }

@@ -82,15 +82,11 @@
                     <label class="form-label" for="captchaSelect">{{ trans('admin.settings.security.captcha.title') }}</label>
                     <select class="form-select @error('captcha') is-invalid @enderror" id="captchaSelect" name="captcha" v-model="type">
                         <option value="">{{ trans('messages.none') }}</option>
-                        <option value="hcaptcha" @selected($captchaType === 'hcaptcha')>
-                            hCaptcha
-                        </option>
-                        <option value="turnstile" @selected($captchaType === 'turnstile')>
-                            Cloudflare Turnstile
-                        </option>
-                        <option value="recaptcha" @selected($captchaType === 'recaptcha')>
-                            Google reCAPTCHA
-                        </option>
+                        @foreach($captchaProviders as $captchaKey => $captchaName)
+                            <option value="{{ $captchaKey }}" @selected($captchaType === $captchaKey)>
+                                {{ $captchaName }}
+                            </option>
+                        @endforeach
                     </select>
 
                     @error('captcha')
@@ -120,10 +116,17 @@
                                 <small class="form-text" v-if="type === 'turnstile'">
                                     @lang('admin.settings.security.captcha.turnstile')
                                 </small>
+
+                                <small class="form-text" v-if="type === 'ddos_guard'">
+                                    @lang('admin.settings.security.captcha.ddos_guard')
+                                </small>
                             </div>
 
                             <div class="mb-3 col-md-6 mb-0">
-                                <label class="form-label" for="secretKeyInput">{{ trans('admin.settings.security.captcha.secret_key') }}</label>
+                                <label class="form-label" for="secretKeyInput">
+                                    <span v-if="type === 'ddos_guard'">{{ trans('admin.settings.security.captcha.private_key') }}</span>
+                                    <span v-else>{{ trans('admin.settings.security.captcha.secret_key') }}</span>
+                                </label>
                                 <input type="text" class="form-control @error('secret_key') is-invalid @enderror" id="secretKeyInput" name="secret_key" value="{{ old('secret_key', setting('captcha.secret_key', '')) }}">
 
                                 @error('secret_key')

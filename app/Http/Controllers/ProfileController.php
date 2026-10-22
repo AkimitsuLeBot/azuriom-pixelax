@@ -15,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
@@ -110,10 +111,7 @@ class ProfileController extends Controller
         $password = $request->input('password');
         $user = $request->user();
 
-        $user->update([
-            'password' => $password,
-            'access_token' => null,
-        ]);
+        $user->update(['password' => $password]);
 
         Auth::logoutOtherDevices($password);
         event(new PasswordReset($user));
@@ -166,7 +164,7 @@ class ProfileController extends Controller
     }
 
     /**
-     * Show the form to enable two-factor authentification.
+     * Show the form to enable two-factor authentication.
      *
      * @throws \PragmaRX\Google2FA\Exceptions\Google2FAException
      */
@@ -204,7 +202,7 @@ class ProfileController extends Controller
     }
 
     /**
-     * Enable two-factor authentification for this user.
+     * Enable two-factor authentication for this user.
      *
      * @throws \Illuminate\Validation\ValidationException
      * @throws \PragmaRX\Google2FA\Exceptions\Google2FAException
@@ -237,7 +235,7 @@ class ProfileController extends Controller
     }
 
     /**
-     * Disable two-factor authentification for this user.
+     * Disable two-factor authentication for this user.
      */
     public function disable2fa(Request $request)
     {
@@ -380,14 +378,20 @@ class ProfileController extends Controller
             ]);
         }
 
-        if ($user->money < $money) {
-            throw ValidationException::withMessages([
-                'money' => trans('messages.profile.money_transfer.balance'),
-            ]);
-        }
+        DB::transaction(function () use ($user, $receiver, $money) {
+            $user = $user->newQuery()
+                ->lockForUpdate()
+                ->findOrFail($user->getKey());
 
-        $user->removeMoney($money);
-        $receiver->addMoney($money);
+            if ($user->money < $money) {
+                throw ValidationException::withMessages([
+                    'money' => trans('messages.profile.money_transfer.balance'),
+                ]);
+            }
+
+            $user->removeMoney($money);
+            $receiver->addMoney($money);
+        });
 
         ActionLog::log('users.transfer', $receiver, ['money' => $money]);
 

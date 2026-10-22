@@ -29,10 +29,9 @@ class UserCreateCommand extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(): int
     {
         $user = User::forceCreate([
-            'role_id' => Role::defaultRoleId(),
             'name' => $this->option('name') ?? $this->ask('The username of the user'),
             'email' => $this->option('email') ?? $this->ask('The Email address of the user'),
             'password' => $this->option('password') ?? $this->secret('The password of the user'),
@@ -49,5 +48,7 @@ class UserCreateCommand extends Command
         $user->markEmailAsVerified();
 
         $this->info('User created successfully.');
+
+        return self::SUCCESS;
     }
 }

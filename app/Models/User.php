@@ -85,7 +85,8 @@ class User extends Authenticatable implements MustVerifyEmail
      * @var array<int, string>
      */
     protected $hidden = [
-        'password', 'remember_token', 'access_token', 'last_login_ip', 'two_factor_secret',
+        'password', 'remember_token', 'access_token', 'last_login_ip',
+        'two_factor_secret', 'two_factor_recovery_codes',
     ];
 
     /**
@@ -129,6 +130,10 @@ class User extends Authenticatable implements MustVerifyEmail
     protected static function booted(): void
     {
         self::creating(function (self $user) {
+            if ($user->role_id === null) {
+                $user->role_id = Role::defaultRoleId();
+            }
+
             if ($user->password_changed_at === null) {
                 $user->password_changed_at = $user->freshTimestamp();
             }

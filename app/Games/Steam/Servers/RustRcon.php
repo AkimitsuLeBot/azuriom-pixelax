@@ -32,10 +32,7 @@ class RustRcon extends Query
 
     public function verifyLink(): bool
     {
-        $this->sendCommands(['status'], new User([
-            'name' => 'Test',
-            'game_id' => 'O',
-        ]));
+        $this->connectWebRcon()->getServerInfo();
 
         return true;
     }
@@ -65,6 +62,6 @@ class RustRcon extends Query
         $port = $this->server->data['rcon-port'] ?? ($this->server->port ?? self::DEFAULT_RCON_PORT);
         $password = decrypt($this->server->data['rcon-password'], false);
 
-        return new RconClient($address, $port, $password);
+        return new RconClient($address, $port, $password, self::COMMANDS_TIMEOUT);
     }
 }

@@ -123,9 +123,11 @@ return [
                 'title' => 'Captcha (protection anti bot)',
                 'site_key' => 'Clé du site',
                 'secret_key' => 'Clé secrète',
+                'private_key' => 'Clé privée',
                 'recaptcha' => 'Vous pouvez obtenir les clés Google reCAPTCHA sur le site de <a href="https://www.google.com/recaptcha/" target="_blank" rel="noopener noreferrer">Google reCAPTCHA</a>. Vous devez utiliser des clés reCAPTCHA <strong>v2 invisible</strong>.',
                 'hcaptcha' => 'Vous pouvez obtenir les clés hCaptcha sur le site de <a href="https://www.hcaptcha.com/" target="_blank" rel="noopener noreferrer">hCaptcha</a>.',
                 'turnstile' => 'Vous pouvez obtenir les clés Turnstile sur le <a href="https://dash.cloudflare.com/?to=/:account/turnstile" target="_blank" rel="noopener noreferrer">tableau de bord Cloudflare</a>. Vous devez sélectionner le widget "Géré".',
+                'ddos_guard' => 'Vous pouvez obtenir la Site key et la Private key en activant dCAPTCHA dans le <a href="https://my.ddos-guard.net/" target="_blank" rel="noopener noreferrer">tableau de bord DDoS-Guard</a>. Ajoutez le domaine de votre site à la clé CAPTCHA.',
                 'login' => 'Activer le captcha sur la page de connexion',
             ],
 
@@ -306,6 +308,7 @@ return [
             'mc-azlink' => 'AzLink',
             'source-query' => 'Source Query',
             'source-rcon' => 'RCON Source',
+            'battleye-rcon' => 'RCON (BattlEye)',
             'steam-azlink' => 'AzLink',
             'bedrock-ping' => 'Ping Bedrock',
             'bedrock-rcon' => 'RCON Bedrock',
@@ -342,6 +345,7 @@ return [
         ],
 
         'edit_profile' => 'Éditer le profil',
+        'unauthorized' => 'Vous ne pouvez pas modifier un utilisateur avec un rôle supérieur.',
 
         'info' => 'Informations de l\'utilisateur',
 
@@ -393,6 +397,7 @@ return [
 
         'updated' => 'Les rôles ont été mis à jour.',
         'unauthorized' => 'Ce rôle est plus élevé que votre propre rôle.',
+        'permissions' => 'Vous pouvez uniquement modifier les permissions que votre rôle actuel possède.',
         'add_admin' => 'Vous ne pouvez pas mettre la permission administrateur à un rôle.',
         'remove_admin' => 'Vous ne pouvez pas retirer la permission admin de votre rôle.',
         'no_admin' => 'Il doit y avoir au moins un autre admin pour retirer votre rôle admin.',
@@ -564,6 +569,9 @@ return [
 
     'logs' => [
         'title' => 'Logs',
+
+        'webhook' => 'URL du webhook Discord',
+        'webhook_info' => 'Un webhook Discord sera envoyé sur cette URL lorsqu\'une entrée est créée. Laisser vide pour désactiver.',
 
         'clear' => 'Supprimer les anciens logs (+15 jours)',
         'cleared' => 'Les anciens logs ont été supprimés.',

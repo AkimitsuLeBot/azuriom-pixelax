@@ -31,6 +31,10 @@ Route::prefix('settings')->name('settings.')->middleware('can:admin.settings')->
     Route::post('/cache/advanced/clear', [SettingsController::class, 'disableAdvancedCache'])->name('cache.advanced.clear');
 
     Route::get('/performance', [SettingsController::class, 'performance'])->name('performance');
+
+    // GET is expected for the link-storage and migrate routes: they must be executed easily if
+    // needed, and these actions are always safe to execute without any undesirable side effects.
+    // Moreover, basic admin permission is required, restricting any unwanted (but harmless) usage.
     Route::get('/storage/link', [SettingsController::class, 'linkStorage'])->name('link-storage');
     Route::get('/migrate', [SettingsController::class, 'migrate'])->name('migrate');
 
@@ -122,7 +126,8 @@ Route::middleware('can:admin.servers')->group(function () {
     Route::post('/servers/default', [ServerController::class, 'changeDefault'])->name('servers.change-default');
 });
 
-Route::post('logs/clear', [ActionLogController::class, 'clear'])->name('logs.clear')->middleware('can:admin.logs');
+Route::post('/logs/settings', [ActionLogController::class, 'updateSettings'])->name('logs.settings')->middleware('can:admin.logs');
+Route::post('/logs/clear', [ActionLogController::class, 'clear'])->name('logs.clear')->middleware('can:admin.logs');
 Route::resource('logs', ActionLogController::class)->only(['index', 'show'])->middleware('can:admin.logs');
 
 Route::fallback([AdminController::class, 'fallback']);

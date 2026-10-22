@@ -123,9 +123,11 @@ return [
                 'title' => 'Captcha',
                 'site_key' => 'Site key',
                 'secret_key' => 'Secret key',
+                'private_key' => 'Private key',
                 'recaptcha' => 'You can get reCAPTCHA keys on the <a href="https://www.google.com/recaptcha/" target="_blank" rel="noopener noreferrer">Google reCAPTCHA website</a>. You need to use reCAPTCHA <strong>v2 invisible</strong> keys.',
                 'hcaptcha' => 'You can get hCaptcha keys on the <a href="https://www.hcaptcha.com/" target="_blank" rel="noopener noreferrer">hCaptcha website</a>.',
                 'turnstile' => 'You can get Turnstil keys on the <a href="https://dash.cloudflare.com/?to=/:account/turnstile" target="_blank" rel="noopener noreferrer">Cloudflare dashboard</a>. You must select "Managed" widget.',
+                'ddos_guard' => 'You can get the Site key and Private key by activating dCAPTCHA in the <a href="https://my.ddos-guard.net/" target="_blank" rel="noopener noreferrer">DDoS-Guard dashboard</a>. Add your website domain to the CAPTCHA key.',
                 'login' => 'Enable captcha on login page',
             ],
 
@@ -306,6 +308,7 @@ return [
             'mc-azlink' => 'AzLink',
             'source-query' => 'Source Query',
             'source-rcon' => 'Source RCON',
+            'battleye-rcon' => 'RCON (BattlEye)',
             'steam-azlink' => 'AzLink',
             'bedrock-ping' => 'Bedrock Ping',
             'bedrock-rcon' => 'Bedrock RCON',
@@ -342,6 +345,7 @@ return [
         ],
 
         'edit_profile' => 'Edit profile',
+        'unauthorized' => 'You cannot edit a user whose role is higher than yours.',
 
         'info' => 'User information',
 
@@ -393,6 +397,7 @@ return [
 
         'updated' => 'The roles have been updated.',
         'unauthorized' => 'This role is higher than your own role.',
+        'permissions' => 'You can only edit the permissions your current role have.',
         'add_admin' => 'You can\'t add the admin permission to a role.',
         'remove_admin' => 'You can\'t remove the admin permission of your role.',
         'no_admin' => 'There must be at least one other admin user to remove your admin role.',
@@ -564,6 +569,9 @@ return [
 
     'logs' => [
         'title' => 'Logs',
+
+        'webhook' => 'Discord Webhook URL',
+        'webhook_info' => 'A Discord webhook will be sent to this URL when a log entry is created. Leave empty to disable.',
 
         'clear' => 'Clear old logs (15d+)',
         'cleared' => 'The old logs has been deleted.',
