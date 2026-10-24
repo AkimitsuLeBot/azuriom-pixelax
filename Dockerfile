@@ -38,6 +38,7 @@ COPY --chown=www-data:www-data plugins ./plugins
 COPY --chown=www-data:www-data routes ./routes
 COPY --chown=www-data:www-data artisan .htaccess composer.json composer.lock index.php server.php ./
 COPY --from=build --chown=www-data:www-data /home/site/public/assets/vendor ./public/assets/vendor
+COPY --from=build --chown=www-data:www-data /home/site/public/build ./public/build
 
 RUN composer install --no-ansi --no-dev --no-interaction --no-plugins --no-progress --no-scripts --optimize-autoloader && \
     php artisan storage:link
