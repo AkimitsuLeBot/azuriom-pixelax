@@ -1,3 +1,6 @@
 User-agent: *
 Disallow: /admin/
+Disallow: /wiki/search
+Disallow: /shop/cart
+
 Sitemap: https://pixelax.fr/sitemap.xml

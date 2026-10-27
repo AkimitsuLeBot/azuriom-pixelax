@@ -5,6 +5,10 @@
 
     RewriteEngine On
 
+    # SEO: www.pixelax.fr -> pixelax.fr (avoid a duplicate copy of the site)
+    RewriteCond %{HTTP_HOST} ^www\.pixelax\.fr$ [NC]
+    RewriteRule ^(.*)$ https://pixelax.fr/$1 [R=301,L]
+
     # Authorization header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
@@ -50,6 +54,15 @@
     <FilesMatch "\.(css|js|jpg|jpeg|png|gif|svg|ico|webp)$">
         Header set Cache-Control "public, max-age=2592000, immutable"
     </FilesMatch>
+
+    # 🖼️ Images uploadées (/storage/...) : servies par PHP, donc cache autorisé explicitement
+    # (sinon "no-store" ci-dessus empêche le cache navigateur et Cloudflare)
+    # (pas d'antislash dans <If "..."> : Apache les retire à la lecture)
+    <If "%{THE_REQUEST} =~ m#^(GET|HEAD) /storage/[^ ?]+[.](png|jpe?g|gif|webp|svg|ico)([?][^ ]*)? #i">
+        Header set Cache-Control "public, max-age=86400" "expr=%{REQUEST_STATUS} == 200"
+        Header unset Pragma "expr=%{REQUEST_STATUS} == 200"
+        Header unset Expires "expr=%{REQUEST_STATUS} == 200"
+    </If>
 
 </IfModule>
 
