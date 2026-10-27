@@ -74,10 +74,9 @@
     }
 </style>
 
-<script defer data-domain="pixelax.fr"
-    src="https://plausible.pixelax.fr/js/script.file-downloads.hash.outbound-links.js"></script>
-<script>
-    window.plausible = window.plausible || function() {
-        (window.plausible.q = window.plausible.q || []).push(arguments)
-    }
-</script>
+{{--
+    Plausible désactivé le 27/10/2026 : plausible.pixelax.fr ne résout plus (DNS), le script échouait sur chaque page.
+    Pour le réactiver une fois le serveur Plausible remis en ligne, remettre :
+    <script defer data-domain="pixelax.fr" src="https://plausible.pixelax.fr/js/script.file-downloads.hash.outbound-links.js"></script>
+    <script>window.plausible = window.plausible || function() { (window.plausible.q = window.plausible.q || []).push(arguments) }</script>
+--}}
