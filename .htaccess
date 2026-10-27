@@ -9,6 +9,9 @@
     RewriteCond %{HTTP_HOST} ^www\.pixelax\.fr$ [NC]
     RewriteRule ^(.*)$ https://pixelax.fr/$1 [R=301,L]
 
+    # SEO: old wiki URL still linked from a past changelog entry
+    RewriteRule ^wiki/pokemon-customs/pokemon-type-swap/?$ https://pixelax.fr/wiki/pokemon-type-swap [R=301,L]
+
     # Authorization header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
