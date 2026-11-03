@@ -11,6 +11,8 @@
             plugins: 'searchreplace autolink code image link anchor lists table',
             toolbar: 'blocks bold italic underline strikethrough forecolor | link image | alignleft aligncenter alignright alignjustify | bullist numlist | removeformat code | undo redo',
             relative_urls: false,
+            // Pixelax : garde https://pixelax.fr dans les liens et images, sinon ils sont cassés dans les mails de la newsletter
+            remove_script_host: false,
             valid_children: "+body[style]",
             extended_valid_elements: 'i[class],iframe[src|frameborder|scrolling|class|width|height|name|allow|title]',
             content_css: '{{ (dark_theme() ? 'dark,' : '').asset('vendor/bootstrap-icons/bootstrap-icons.css') }}',
