@@ -15,6 +15,11 @@ class Kernel extends ConsoleKernel
         $schedule->command('game:ping')->everyMinute();
         $schedule->command('attachments:purge')->daily();
         $schedule->command('logs:purge')->monthly();
+        // Pixelax : aucun worker ne tourne en continu, on traite la file (mails de la newsletter…) chaque minute
+        $schedule->command('queue:work --stop-when-empty --max-time=50 --tries=1')
+            ->everyMinute()
+            ->withoutOverlapping(5)
+            ->runInBackground();
     }
 
     /**
