@@ -121,7 +121,8 @@ return [
     */
 
     'failed' => [
-        'driver' => env('QUEUE_FAILED_DRIVER', 'database-uuids'),
+        // Pixelax : la table failed_jobs d'Azuriom n'a pas de colonne uuid, le pilote « database-uuids » plantait
+        'driver' => env('QUEUE_FAILED_DRIVER', 'database'),
         'database' => env('DB_CONNECTION', 'sqlite'),
         'table' => 'failed_jobs',
     ],
