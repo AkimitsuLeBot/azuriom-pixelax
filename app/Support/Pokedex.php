@@ -77,7 +77,8 @@ class Pokedex
                 $entries = [];
 
                 foreach ($categories as $category) {
-                    $kind = static::WIKI_PARENTS[$category->parent?->slug] ?? null;
+                    $parentSlug = $category->parent?->slug;
+                    $kind = $parentSlug !== null ? (static::WIKI_PARENTS[$parentSlug] ?? null) : null;
 
                     if ($kind === null || $category->roles !== null || $category->parent->roles !== null || ! $category->parent->is_enabled) {
                         continue;

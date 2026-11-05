@@ -123,6 +123,13 @@ return [
             'handler' => NullHandler::class,
         ],
 
+        // Pixelax : canal des avertissements « deprecated » défini explicitement (sinon Laravel retombait
+        // sur le logger d'urgence à chaque avertissement : « Log [deprecations] is not defined »)
+        'deprecations' => [
+            'driver' => 'monolog',
+            'handler' => NullHandler::class,
+        ],
+
         'emergency' => [
             'path' => storage_path('logs/laravel.log'),
         ],
