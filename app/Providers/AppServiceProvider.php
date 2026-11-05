@@ -7,6 +7,7 @@ use Azuriom\Models\Page;
 use Azuriom\Models\Post;
 use Azuriom\Models\User;
 use Azuriom\Notifications\AlertNotificationChannel;
+use Azuriom\Support\PixelaxVoteChecker;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Pagination\Paginator;
@@ -30,6 +31,9 @@ class AppServiceProvider extends ServiceProvider
         $translator->setFallback($this->app['config']['app.fallback_locale']);
 
         $this->app->instance('translator', $translator);
+
+        // Pixelax: serveur-prive.net votes are also checked by username (resolved only when the vote plugin asks for it)
+        $this->app->bind('Azuriom\Plugin\Vote\Verification\VoteChecker', fn () => new PixelaxVoteChecker());
     }
 
     /**
