@@ -12,6 +12,10 @@
     # SEO: old wiki URL still linked from a past changelog entry
     RewriteRule ^wiki/pokemon-customs/pokemon-type-swap/?$ https://pixelax.fr/wiki/pokemon-type-swap [R=301,L]
 
+    # SEO: wiki spawn pages removed, replaced by the Pokédex
+    RewriteRule ^wiki/divers/spawn-pokemon/?$ https://pixelax.fr/pokedex [R=301,L]
+    RewriteRule ^wiki/divers/spawns-des-legendaires/?$ https://pixelax.fr/pokedex?cat=legend [R=301,L,NE]
+
     # Authorization header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]

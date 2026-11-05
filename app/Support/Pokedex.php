@@ -69,9 +69,40 @@ class Pokedex
     /**
      * Render of the Cobblemon model: 192 px, or the 128 px thumbnail for lists and small images.
      */
-    public static function sprite(?int $dex, bool $small = false): ?string
+    public static function sprite(int|string|null $sprite, bool $small = false): ?string
     {
-        return $dex !== null ? asset('img/pokedex/'.($small ? 's/' : '').$dex.'.webp') : null;
+        return $sprite !== null ? asset('img/pokedex/'.($small ? 's/' : '').$sprite.'.webp') : null;
+    }
+
+    /**
+     * Entries shown after the Pokémon in the list: wiki customs and skins grouped by category,
+     * with the custom Pokémon of the data (e.g. Thu-Fi-Zer) added to the group of the same badge.
+     */
+    public static function extraEntries(): array
+    {
+        $entries = static::wikiEntries();
+
+        foreach (static::species() as $pokemon) {
+            if (empty($pokemon['custom'])) {
+                continue;
+            }
+
+            $group = collect($entries)->last(fn ($entry) => $entry['label'] === $pokemon['custom']);
+            $entry = [
+                'name' => $pokemon['name'],
+                'kind' => 'custom',
+                'group' => $group['group'] ?? 'Pokémon customs',
+                'groupTitle' => $group['groupTitle'] ?? 'Pokémon customs',
+                'label' => $pokemon['custom'],
+                'url' => route('pokedex.show', $pokemon['slug']),
+                'image' => static::sprite($pokemon['sprite'], true),
+                'search' => Str::lower(Str::ascii($pokemon['name'].' '.($group['group'] ?? 'custom'))),
+            ];
+            $position = $group !== null ? array_search($group, $entries, true) + 1 : count($entries);
+            array_splice($entries, $position, 0, [$entry]);
+        }
+
+        return $entries;
     }
 
     /**
@@ -79,14 +110,17 @@ class Pokedex
      */
     public static function wikiEntries(): array
     {
-        return Cache::remember('pokedex.wiki', now()->addMinutes(10), function () {
+        return Cache::remember('pokedex.wiki.v2', now()->addMinutes(10), function () {
             try {
                 if (! plugins()->isEnabled('wiki') || ! Schema::hasTable('wiki_pages')) {
                     return [];
                 }
 
                 $categoryClass = 'Azuriom\Plugin\Wiki\Models\Category';
-                $categories = $categoryClass::with(['pages', 'parent'])->where('is_enabled', true)->get();
+                // Même ordre que le wiki : Pokémon customs puis Skins, chaque catégorie à sa position
+                $categories = $categoryClass::with(['pages', 'parent'])->where('is_enabled', true)->get()
+                    ->sortBy(fn ($category) => [$category->parent?->position ?? 0, $category->position])
+                    ->values();
                 $entries = [];
 
                 foreach ($categories as $category) {
@@ -102,6 +136,7 @@ class Pokedex
                             'name' => $page->title,
                             'kind' => $kind,
                             'group' => $category->name,
+                            'groupTitle' => $kind === 'skin' ? 'Skins · '.$category->name : $category->name,
                             'label' => static::CATEGORY_LABELS[$category->slug] ?? preg_replace('/^Pokémon\s+/u', '', $category->name),
                             'url' => route('wiki.pages.show', [$category, $page]),
                             'image' => static::firstImage((string) $page->content),

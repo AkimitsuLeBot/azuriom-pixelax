@@ -3,7 +3,8 @@
 @php
     $mon = $pokemon;
     $types = $meta['types'];
-    $num = '#'.str_pad($mon['dex'], 4, '0', STR_PAD_LEFT);
+    // Pokémon custom (ex. Thu-Fi-Zer) : pas de numéro de Pokédex, son type de custom à la place
+    $num = empty($mon['custom']) ? '#'.str_pad($mon['dex'], 4, '0', STR_PAD_LEFT) : 'Pokémon custom · '.$mon['custom'];
     $categories = ['legendary' => 'Pokémon légendaire', 'mythical' => 'Pokémon fabuleux', 'ultra_beast' => 'Ultra-Chimère', 'paradox' => 'Pokémon Paradoxe'];
     $statLabels = ['hp' => 'PV', 'atk' => 'Attaque', 'def' => 'Défense', 'spa' => 'Atq. Spé.', 'spd' => 'Déf. Spé.', 'spe' => 'Vitesse'];
     $statColors = ['hp' => '#9fd36b', 'atk' => '#f5ac78', 'def' => '#fae078', 'spa' => '#9db7f5', 'spd' => '#a7db8d', 'spe' => '#fa92b2'];
@@ -20,7 +21,7 @@
     } else {
         $seoWhere = 'pas d’apparition sauvage';
     }
-    $seoDescription = \Illuminate\Support\Str::limit("{$mon['name']} ({$num}) sur Pixelax, serveur Minecraft Cobblemon : {$seoWhere}. Évolutions, talents, statistiques, objets et capacités.", 158, '…');
+    $seoDescription = \Illuminate\Support\Str::limit("{$mon['name']} (".(empty($mon['custom']) ? $num : $mon['custom']).") sur Pixelax, serveur Minecraft Cobblemon : {$seoWhere}. Évolutions, talents, statistiques, objets et capacités.", 158, '…');
 
     $crumbs = [
         ['name' => trans('messages.home'), 'url' => route('home')],
@@ -186,16 +187,16 @@
                 @if(! empty($mon['legends']))
                     <h3>Apparition légendaire</h3>
                     <p class="px-dex-muted">
-                        Toutes les {{ $meta['legendInterval'] }}, le serveur a {{ $meta['legendChance'] }} % de chances de faire apparaître un légendaire
+                        Toutes les {{ $meta['legendInterval'] }}, le serveur a {{ $meta['legendChance'] }}% de chances de faire apparaître un légendaire
                         près d’un joueur, au niveau {{ $meta['legendLevel'] }}. Voir aussi
-                        <a href="{{ url('/wiki/divers/spawns-des-legendaires') }}">les spawns des légendaires</a>.
+                        <a href="{{ route('pokedex.index') }}?cat=legend">tous les légendaires</a>.
                     </p>
                     <div class="px-dex-spawns">
                         @foreach($mon['legends'] as $legend)
                             <article class="px-dex-spawn">
                                 <div class="px-dex-spawn-head">
                                     <span class="px-dex-rarity px-dex-rarity--legend">Légendaire</span>
-                                    <span class="px-dex-chip">{{ str_replace('.', ',', $legend['share']) }} % des apparitions</span>
+                                    <span class="px-dex-chip">{{ str_replace('.', ',', $legend['share']) }}% des apparitions</span>
                                     @if($legend['form'])
                                         <span class="px-dex-chip">{{ $legend['form'] }}</span>
                                     @endif
@@ -318,7 +319,7 @@
                             @if($mon['maleRatio'] === null || $mon['maleRatio'] < 0)
                                 Asexué
                             @else
-                                {{ round($mon['maleRatio'] * 100, 1) }} % ♂ · {{ round((1 - $mon['maleRatio']) * 100, 1) }} % ♀
+                                {{ str_replace('.', ',', round($mon['maleRatio'] * 100, 1)) }}% ♂ · {{ str_replace('.', ',', round((1 - $mon['maleRatio']) * 100, 1)) }}% ♀
                             @endif
                         </dd>
                     </div>
@@ -348,7 +349,7 @@
                         <tbody>
                             @foreach($mon['drops']['items'] as $item)
                                 <tr>
-                                    <td>{{ str_replace('.', ',', $item['chance']) }} %</td>
+                                    <td>{{ str_replace('.', ',', $item['chance']) }}%</td>
                                     <td>{{ $item['name'] }}</td>
                                     <td>{{ $item['qty'] ?? '1' }}</td>
                                 </tr>

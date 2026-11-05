@@ -14,7 +14,7 @@ class PokedexController extends Controller
         return view('pokedex.index', [
             'species' => Pokedex::species(),
             'meta' => Pokedex::meta(),
-            'wikiEntries' => Pokedex::wikiEntries(),
+            'wikiEntries' => Pokedex::extraEntries(),
         ]);
     }
 
@@ -27,7 +27,8 @@ class PokedexController extends Controller
 
         abort_if($pokemon === null, 404);
 
-        $list = Pokedex::species();
+        // Précédent / suivant : seulement les Pokémon numérotés (pas les customs comme Thu-Fi-Zer)
+        $list = array_values(array_filter(Pokedex::species(), fn (array $pokemon) => empty($pokemon['custom'])));
         $position = array_search($slug, array_column($list, 'slug'), true);
 
         return view('pokedex.show', [

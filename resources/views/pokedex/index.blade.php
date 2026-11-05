@@ -72,13 +72,16 @@
                 <option value="custom">Pokémon customs Pixelax</option>
                 <option value="skin">Skins</option>
             </select>
-            <p class="px-dex-count" id="dexCount" aria-live="polite">{{ count($species) + count($wikiEntries) }} Pokémon</p>
+            <p class="px-dex-count" id="dexCount" aria-live="polite">{{ count(array_filter($species, fn ($m) => empty($m['custom']))) + count($wikiEntries) }} Pokémon</p>
         </form>
 
         @php
             // Une entrée compacte par carte : [recherche, types, génération, catégories, lien, badge, badge skin, image, numéro, nom, icône]
             $dexEntries = [];
             foreach ($species as $mon) {
+                if (! empty($mon['custom'])) {
+                    continue; // fusion sans page wiki : rangée avec les customs (extraEntries)
+                }
                 $kinds = [$mon['wild'] ? 'wild' : 'nowild'];
                 if ($mon['legend'] || in_array($mon['cat'], ['legendary', 'mythical'], true)) {
                     $kinds[] = 'legend';
@@ -91,12 +94,23 @@
                     '#'.str_pad($mon['dex'], 4, '0', STR_PAD_LEFT), $mon['name'], 'circle-half',
                 ];
             }
+            // Customs puis skins, regroupés par catégorie avec un titre par groupe : ['__h', titre, type]
+            $dexGroup = null;
             foreach ($wikiEntries as $entry) {
                 $skin = $entry['kind'] === 'skin';
+                $title = $entry['groupTitle'] ?? $entry['group'];
+                if ($title !== $dexGroup) {
+                    $dexEntries[] = ['__h', $title, $entry['kind']];
+                    $dexGroup = $title;
+                }
                 $dexEntries[] = [$entry['search'], '', '', $entry['kind'], $entry['url'], $entry['label'] ?? $entry['group'], $skin ? 1 : 0, $entry['image'] ?? '', $skin ? 'Skin' : 'Pokémon custom', $entry['name'], 'stars'];
             }
             // Même rendu que le script plus bas (dexCard)
             $dexCard = function (array $e) use ($dexTypes) {
+                if ($e[0] === '__h') {
+                    return '<li class="px-dex-group" data-h="'.e($e[2]).'"><h2>'.e($e[1]).'</h2></li>';
+                }
+
                 return '<li data-s="'.e($e[0]).'" data-t="'.e($e[1]).'" data-g="'.e($e[2]).'" data-k="'.e($e[3]).'"><a class="px-dex-card" href="'.e($e[4]).'">'
                     .($e[7] !== '' ? '<img src="'.e($e[7]).'" alt="" width="72" height="72" loading="lazy" decoding="async">' : '<span class="px-dex-ball" aria-hidden="true"><i class="bi bi-'.$e[10].'"></i></span>')
                     .'<span class="px-dex-num">'.e($e[8]).'</span><span class="px-dex-name">'.e($e[9]).'</span>'
@@ -128,7 +142,7 @@
             const rest = data.entries;
             const esc = (v) => String(v).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
             // Même rendu que $dexCard côté serveur
-            const dexCard = (e) => '<li data-s="' + esc(e[0]) + '" data-t="' + esc(e[1]) + '" data-g="' + esc(e[2]) + '" data-k="' + esc(e[3]) + '"><a class="px-dex-card" href="' + esc(e[4]) + '">'
+            const dexCard = (e) => e[0] === '__h' ? '<li class="px-dex-group" data-h="' + esc(e[2]) + '"><h2>' + esc(e[1]) + '</h2></li>' : '<li data-s="' + esc(e[0]) + '" data-t="' + esc(e[1]) + '" data-g="' + esc(e[2]) + '" data-k="' + esc(e[3]) + '"><a class="px-dex-card" href="' + esc(e[4]) + '">'
                 + (e[7] ? '<img src="' + esc(e[7]) + '" alt="" width="72" height="72" loading="lazy" decoding="async">' : '<span class="px-dex-ball" aria-hidden="true"><i class="bi bi-' + esc(e[10]) + '"></i></span>')
                 + '<span class="px-dex-num">' + esc(e[8]) + '</span><span class="px-dex-name">' + esc(e[9]) + '</span>'
                 + (e[1] ? '<span class="px-dex-types">' + e[1].split(' ').map((t) => '<span class="px-type px-type--' + esc(t) + '">' + esc(data.types[t] || t) + '</span>').join('') + '</span>' : '')
@@ -168,14 +182,26 @@
                 const words = normalize(search.value).split(/\s+/).filter(Boolean);
                 let shown = 0;
 
+                // Titres de groupe : visibles seulement si au moins une carte du groupe l'est
+                let header = null;
+                let headerHasItems = false;
+                const closeGroup = () => { if (header) header.hidden = !headerHasItems; };
                 items.forEach(function (item) {
+                    if (item.dataset.h !== undefined) {
+                        closeGroup();
+                        header = item;
+                        headerHasItems = false;
+                        return;
+                    }
                     const match = words.every((word) => item.dataset.s.includes(word.replace(/^#0*/, '')))
                         && (!type.value || item.dataset.t.split(' ').includes(type.value))
                         && (!gen.value || item.dataset.g === gen.value)
                         && (!kind.value || item.dataset.k.split(' ').includes(kind.value));
                     item.hidden = !match;
                     shown += match ? 1 : 0;
+                    headerHasItems = headerHasItems || match;
                 });
+                closeGroup();
 
                 count.textContent = shown + ' Pokémon';
                 empty.hidden = shown > 0;
