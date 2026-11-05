@@ -175,6 +175,25 @@ class Pokedex
     }
 
     /**
+     * Length of the longest common substring of two keys ("polagriffe" / "tankgriffe" -> 6).
+     */
+    protected static function commonLength(string $a, string $b): int
+    {
+        $best = 0;
+        $previous = array_fill(0, strlen($b) + 1, 0);
+        for ($i = 1, $la = strlen($a); $i <= $la; $i++) {
+            $current = [0];
+            for ($j = 1, $lb = strlen($b); $j <= $lb; $j++) {
+                $current[$j] = $a[$i - 1] === $b[$j - 1] ? $previous[$j - 1] + 1 : 0;
+                $best = max($best, $current[$j]);
+            }
+            $previous = $current;
+        }
+
+        return $best;
+    }
+
+    /**
      * Comparison key: lowercase letters and digits only ("Pikachu Gros" -> "pikachugros").
      */
     public static function key(string $text): string
@@ -223,6 +242,21 @@ class Pokedex
                     if (str_starts_with($nameKey, $species)) {
                         return $entry;
                     }
+                }
+            } elseif (str_starts_with($key, 'franchise:')) {
+                // « franchise:sanrio:pikachu:pikachu » : la page de la catégorie qui partage le plus long morceau
+                // de nom (français ou anglais) avec le Pokémon, si elle est la seule (Kurochu, Tankgriffe…)
+                [, $category, $fr, $en] = array_pad(explode(':', $key, 4), 4, '');
+                $scores = [];
+                foreach (static::wikiEntries() as $entry) {
+                    if ($entry['category'] === $category) {
+                        $title = static::key($entry['name']);
+                        $scores[] = [max(static::commonLength($fr, $title), static::commonLength($en, $title)), $entry];
+                    }
+                }
+                usort($scores, fn ($a, $b) => $b[0] <=> $a[0]);
+                if (isset($scores[0]) && $scores[0][0] >= 3 && (! isset($scores[1]) || $scores[1][0] < $scores[0][0])) {
+                    return $scores[0][1];
                 }
             } elseif (str_starts_with($key, 'evolition:')) {
                 if (isset($index['evolitions'][substr($key, 10)])) {
@@ -301,7 +335,7 @@ class Pokedex
         $customs = is_file(static::path('customs.json')) ? json_decode(file_get_contents(static::path('customs.json')), true) : [];
         foreach (static::wikiEntries() as $entry) {
             $key = $entry['category'] === 'pokemon-type-swap' ? 'swap:'.static::key($entry['name']) : null;
-            $file = $customs[$key] ?? $customs[$entry['key']] ?? $customs[static::key($entry['name'])] ?? null;
+            $file = ($key !== null ? ($customs[$key] ?? null) : null) ?? $customs[$entry['key']] ?? $customs[static::key($entry['name'])] ?? null;
             if ($file !== null) {
                 $renders[$entry['url']] = asset('img/pokedex/custom/s/'.$file.'.webp');
             }
