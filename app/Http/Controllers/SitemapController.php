@@ -4,6 +4,7 @@ namespace Azuriom\Http\Controllers;
 
 use Azuriom\Models\Page;
 use Azuriom\Models\Post;
+use Azuriom\Support\Pokedex;
 use Closure;
 use DateTimeInterface;
 use Illuminate\Support\Carbon;
@@ -81,6 +82,7 @@ class SitemapController extends Controller
             fn () => $this->wiki(),
             fn () => $this->shop(),
             fn () => $this->changelog(),
+            fn () => $this->pokedex(),
 
             fn () => collect(['vote.home', 'staff.index'])
                 ->filter(fn (string $name) => $this->pluginRoute($name))
@@ -158,6 +160,15 @@ class SitemapController extends Controller
             });
 
         return $urls;
+    }
+
+    protected function pokedex(): iterable
+    {
+        $lastmod = Carbon::createFromTimestamp(filemtime(Pokedex::path('index.json')));
+
+        return collect(Pokedex::species())
+            ->map(fn (array $pokemon) => $this->url(route('pokedex.show', $pokemon['slug']), $lastmod))
+            ->prepend($this->url(route('pokedex.index'), $lastmod));
     }
 
     protected function pluginRoute(string $name): bool

@@ -4,6 +4,7 @@ use Azuriom\Http\Controllers\Auth\LoginController;
 use Azuriom\Http\Controllers\FallbackController;
 use Azuriom\Http\Controllers\HomeController;
 use Azuriom\Http\Controllers\NotificationController;
+use Azuriom\Http\Controllers\PokedexController;
 use Azuriom\Http\Controllers\PostCommentController;
 use Azuriom\Http\Controllers\PostController;
 use Azuriom\Http\Controllers\PostLikeController;
@@ -16,6 +17,9 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
+
+Route::get('/pokedex', [PokedexController::class, 'index'])->name('pokedex.index');
+Route::get('/pokedex/{slug}', [PokedexController::class, 'show'])->where('slug', '[a-z0-9-]+')->name('pokedex.show');
 
 Route::prefix('user')->namespace('Azuriom\\Http\\Controllers')->group(function () {
     Auth::routes([
