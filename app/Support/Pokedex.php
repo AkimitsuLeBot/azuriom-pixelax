@@ -16,6 +16,19 @@ class Pokedex
 {
     protected const WIKI_PARENTS = ['pokemon-customs' => 'custom', 'skins' => 'skin'];
 
+    /**
+     * Badge of a wiki entry: its category, in the singular (one card = one Pokémon).
+     * Categories not listed here (One Piece, Sanrio, Battle pass Saison 1…) keep their name.
+     */
+    protected const CATEGORY_LABELS = [
+        'pokemon-fusions' => 'Fusion',
+        'pokemon-type-swap' => 'Type swap',
+        'evolitions' => 'Évolition',
+        'pokemon-bebes-legendaires' => 'Bébé légendaire',
+        'evenements' => 'Événement',
+        'autres' => 'Skin',
+    ];
+
     protected static ?array $index = null;
 
     public static function path(string $file = ''): string
@@ -89,6 +102,7 @@ class Pokedex
                             'name' => $page->title,
                             'kind' => $kind,
                             'group' => $category->name,
+                            'label' => static::CATEGORY_LABELS[$category->slug] ?? preg_replace('/^Pokémon\s+/u', '', $category->name),
                             'url' => route('wiki.pages.show', [$category, $page]),
                             'image' => static::firstImage((string) $page->content),
                             'search' => Str::lower(Str::ascii($page->title.' '.$category->name)),

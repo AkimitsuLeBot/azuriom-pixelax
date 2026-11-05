@@ -103,14 +103,24 @@
     background: var(--color-bg);
     border: 1px solid var(--color-contrast-low);
     border-radius: var(--dex-radius);
-    transition: border-color .15s, transform .15s;
+    transition: border-color .15s, background-color .15s, transform .15s;
 }
 
-.px-dex-card:hover,
+/* Survol seulement avec une souris (sur mobile l'effet restait « collé » après un appui) */
+@media (hover: hover) {
+    .px-dex-card:hover {
+        color: var(--color-contrast-higher);
+        background: var(--color-contrast-lower);
+        border-color: var(--color-primary);
+        transform: translateY(-2px);
+    }
+}
+
 .px-dex-card:focus-visible {
     color: var(--color-contrast-higher);
     border-color: var(--color-primary);
-    transform: translateY(-2px);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
 }
 
 .px-dex-card img,
@@ -139,11 +149,14 @@
     overflow-wrap: anywhere;
 }
 
+/* Badge de catégorie (Légendaire, Fusion, One Piece…) sous le nom : ne chevauche jamais l'image */
 .px-dex-tag {
-    position: absolute;
-    top: .45rem;
-    right: .45rem;
-    padding: .05rem .4rem;
+    max-width: 100%;
+    margin-top: .1rem;
+    padding: .05rem .45rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     font-size: .68rem;
     font-weight: 600;
     color: var(--px-ink, #1f1f2e);

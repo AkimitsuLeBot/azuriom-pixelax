@@ -93,15 +93,15 @@
             }
             foreach ($wikiEntries as $entry) {
                 $skin = $entry['kind'] === 'skin';
-                $dexEntries[] = [$entry['search'], '', '', $entry['kind'], $entry['url'], $skin ? 'Skin' : 'Custom', $skin ? 1 : 0, $entry['image'] ?? '', $entry['group'], $entry['name'], 'stars'];
+                $dexEntries[] = [$entry['search'], '', '', $entry['kind'], $entry['url'], $entry['label'] ?? $entry['group'], $skin ? 1 : 0, $entry['image'] ?? '', $skin ? 'Skin' : 'Pokémon custom', $entry['name'], 'stars'];
             }
             // Même rendu que le script plus bas (dexCard)
             $dexCard = function (array $e) use ($dexTypes) {
                 return '<li data-s="'.e($e[0]).'" data-t="'.e($e[1]).'" data-g="'.e($e[2]).'" data-k="'.e($e[3]).'"><a class="px-dex-card" href="'.e($e[4]).'">'
-                    .($e[5] !== '' ? '<span class="px-dex-tag'.($e[6] ? ' px-dex-tag--skin' : '').'">'.e($e[5]).'</span>' : '')
                     .($e[7] !== '' ? '<img src="'.e($e[7]).'" alt="" width="72" height="72" loading="lazy" decoding="async">' : '<span class="px-dex-ball" aria-hidden="true"><i class="bi bi-'.$e[10].'"></i></span>')
                     .'<span class="px-dex-num">'.e($e[8]).'</span><span class="px-dex-name">'.e($e[9]).'</span>'
                     .($e[1] !== '' ? '<span class="px-dex-types">'.implode('', array_map(fn ($t) => '<span class="px-type px-type--'.e($t).'">'.e($dexTypes[$t] ?? $t).'</span>', explode(' ', $e[1]))).'</span>' : '')
+                    .($e[5] !== '' ? '<span class="px-dex-tag'.($e[6] ? ' px-dex-tag--skin' : '').'">'.e($e[5]).'</span>' : '')
                     .'</a></li>';
             };
         @endphp
@@ -129,10 +129,10 @@
             const esc = (v) => String(v).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
             // Même rendu que $dexCard côté serveur
             const dexCard = (e) => '<li data-s="' + esc(e[0]) + '" data-t="' + esc(e[1]) + '" data-g="' + esc(e[2]) + '" data-k="' + esc(e[3]) + '"><a class="px-dex-card" href="' + esc(e[4]) + '">'
-                + (e[5] ? '<span class="px-dex-tag' + (e[6] ? ' px-dex-tag--skin' : '') + '">' + esc(e[5]) + '</span>' : '')
                 + (e[7] ? '<img src="' + esc(e[7]) + '" alt="" width="72" height="72" loading="lazy" decoding="async">' : '<span class="px-dex-ball" aria-hidden="true"><i class="bi bi-' + esc(e[10]) + '"></i></span>')
                 + '<span class="px-dex-num">' + esc(e[8]) + '</span><span class="px-dex-name">' + esc(e[9]) + '</span>'
                 + (e[1] ? '<span class="px-dex-types">' + e[1].split(' ').map((t) => '<span class="px-type px-type--' + esc(t) + '">' + esc(data.types[t] || t) + '</span>').join('') + '</span>' : '')
+                + (e[5] ? '<span class="px-dex-tag' + (e[6] ? ' px-dex-tag--skin' : '') + '">' + esc(e[5]) + '</span>' : '')
                 + '</a></li>';
             const items = Array.from(grid.children);
             function addCards(count) {

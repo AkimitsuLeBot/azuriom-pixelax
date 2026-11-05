@@ -406,7 +406,7 @@
                                         <img src="{{ $entry['image'] }}" alt="" width="80" height="80" loading="lazy" decoding="async">
                                     @endif
                                     <span class="px-dex-name">{{ $entry['name'] }}</span>
-                                    <span class="px-dex-num">{{ $entry['group'] }}</span>
+                                    <span class="px-dex-num">{{ $entry['label'] ?? $entry['group'] }}</span>
                                 </a>
                             </li>
                         @endforeach
