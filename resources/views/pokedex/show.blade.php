@@ -10,6 +10,7 @@
     $statColors = ['hp' => '#9fd36b', 'atk' => '#f5ac78', 'def' => '#fae078', 'spa' => '#9db7f5', 'spd' => '#a7db8d', 'spe' => '#fa92b2'];
     $total = array_sum(array_filter($mon['stats'], 'is_numeric'));
     $sprite = \Azuriom\Support\Pokedex::sprite($mon['sprite']);
+    $shiny = \Azuriom\Support\Pokedex::shiny($mon['sprite']);
 
     // SEO : description propre à chaque Pokémon (où le trouver en premier, c'est ce qu'on cherche)
     $where = collect($mon['spawns'])->flatMap(fn ($s) => array_column($s['biomes'], 'label'))->unique()->take(3)->implode(', ');
@@ -73,11 +74,19 @@
         {{-- En-tête --}}
         <div class="card mb-3">
             <div class="card-body px-dex-hero">
-                <div class="px-dex-hero-art">
-                    @if($sprite)
-                        <img src="{{ $sprite }}" alt="{{ $mon['name'] }}" width="150" height="150" fetchpriority="high">
-                    @else
-                        <span class="px-dex-ball" aria-hidden="true"><i class="bi bi-circle-half"></i></span>
+                <div class="px-dex-hero-media">
+                    <div class="px-dex-hero-art">
+                        @if($sprite)
+                            <img src="{{ $sprite }}" alt="{{ $mon['name'] }}" width="150" height="150" fetchpriority="high" id="dexArt"
+                                 data-normal="{{ $sprite }}" @if($shiny) data-shiny="{{ $shiny }}" @endif>
+                        @else
+                            <span class="px-dex-ball" aria-hidden="true"><i class="bi bi-circle-half"></i></span>
+                        @endif
+                    </div>
+                    @if($shiny)
+                        <button type="button" class="px-dex-shiny" id="dexShiny" aria-pressed="false">
+                            <i class="bi bi-stars" aria-hidden="true"></i> Version shiny
+                        </button>
                     @endif
                 </div>
                 <div>
@@ -451,3 +460,24 @@
         </p>
     </div>
 @endsection
+
+@if($shiny)
+    @push('footer-scripts')
+        <script>
+            // Bascule entre le rendu normal et le rendu shiny (chargé seulement au premier clic)
+            (function () {
+                const art = document.getElementById('dexArt');
+                const button = document.getElementById('dexShiny');
+                if (!art || !button) {
+                    return;
+                }
+                button.addEventListener('click', function () {
+                    const shiny = button.getAttribute('aria-pressed') !== 'true';
+                    art.src = shiny ? art.dataset.shiny : art.dataset.normal;
+                    art.alt = art.alt.replace(/ shiny$/, '') + (shiny ? ' shiny' : '');
+                    button.setAttribute('aria-pressed', shiny ? 'true' : 'false');
+                });
+            })();
+        </script>
+    @endpush
+@endif

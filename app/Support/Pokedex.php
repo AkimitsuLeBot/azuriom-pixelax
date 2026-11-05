@@ -75,6 +75,18 @@ class Pokedex
     }
 
     /**
+     * Shiny render of the Cobblemon model, when the model has a shiny texture.
+     */
+    public static function shiny(int|string|null $sprite): ?string
+    {
+        if ($sprite === null || ! is_file(public_path('assets/img/pokedex/shiny/'.$sprite.'.webp'))) {
+            return null;
+        }
+
+        return asset('img/pokedex/shiny/'.$sprite.'.webp');
+    }
+
+    /**
      * Entries shown after the Pokémon in the list: wiki customs and skins grouped by category,
      * with the custom Pokémon of the data (e.g. Thu-Fi-Zer) added to the group of the same badge.
      */
