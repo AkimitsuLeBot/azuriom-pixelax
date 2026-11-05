@@ -90,7 +90,7 @@
                 $dexEntries[] = [
                     $dexAscii($mon['name'].' '.($mon['en'] ?? '').' '.implode(' ', $typeLabels).' '.$mon['dex']),
                     implode(' ', $mon['types']), (string) $mon['gen'], implode(' ', $kinds), '/pokedex/'.$mon['slug'],
-                    $mon['cat'] ? ($dexCategories[$mon['cat']] ?? '') : '', 0, $mon['sprite'] ? '/assets/img/pokedex/s/'.$mon['sprite'].'.webp' : '',
+                    $mon['cat'] ? ($dexCategories[$mon['cat']] ?? '') : '', 0, $mon['sprite'] ? '/assets/img/pokedex/s/'.$mon['sprite'].'.webp'.\Azuriom\Support\Pokedex::imageVersion() : '',
                     '#'.str_pad($mon['dex'], 4, '0', STR_PAD_LEFT), $mon['name'], 'circle-half',
                 ];
             }

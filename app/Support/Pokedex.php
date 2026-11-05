@@ -67,11 +67,31 @@ class Pokedex
     }
 
     /**
+     * URL of a Pokédex picture, with the version of the renders: the pictures are cached for 30 days
+     * (Cloudflare and browsers), so a new render must get a new URL.
+     */
+    public static function image(string $path): string
+    {
+        return asset('img/pokedex/'.$path).static::imageVersion();
+    }
+
+    /**
+     * Query string of the renders version (« ?v=… »), from version.txt written by the build scripts.
+     */
+    public static function imageVersion(): string
+    {
+        static $version = null;
+        $version ??= trim((string) @file_get_contents(static::path('version.txt')));
+
+        return $version !== '' ? '?v='.$version : '';
+    }
+
+    /**
      * Render of the Cobblemon model: 192 px, or the 128 px thumbnail for lists and small images.
      */
     public static function sprite(int|string|null $sprite, bool $small = false): ?string
     {
-        return $sprite !== null ? asset('img/pokedex/'.($small ? 's/' : '').$sprite.'.webp') : null;
+        return $sprite !== null ? static::image(($small ? 's/' : '').$sprite.'.webp') : null;
     }
 
     /**
@@ -83,7 +103,7 @@ class Pokedex
             return null;
         }
 
-        return asset('img/pokedex/shiny/'.$sprite.'.webp');
+        return static::image('shiny/'.$sprite.'.webp');
     }
 
     /**
@@ -290,7 +310,7 @@ class Pokedex
                 'name' => $page['name'] ?? $pokemon['name'].' '.$skin['label'],
                 'group' => $page !== null ? $page['label'] : 'Skin',
                 'url' => $page['url'] ?? null,
-                'image' => asset('img/pokedex/skins/s/'.$skin['id'].'.webp'),
+                'image' => static::image('skins/s/'.$skin['id'].'.webp'),
             ];
         }
 
@@ -337,7 +357,7 @@ class Pokedex
             $key = $entry['category'] === 'pokemon-type-swap' ? 'swap:'.static::key($entry['name']) : null;
             $file = ($key !== null ? ($customs[$key] ?? null) : null) ?? $customs[$entry['key']] ?? $customs[static::key($entry['name'])] ?? null;
             if ($file !== null) {
-                $renders[$entry['url']] = asset('img/pokedex/custom/s/'.$file.'.webp');
+                $renders[$entry['url']] = static::image('custom/s/'.$file.'.webp');
             }
         }
 
@@ -345,7 +365,7 @@ class Pokedex
             foreach ($skins as $skin) {
                 $page = static::wikiPageFor($skin);
                 if ($page !== null) {
-                    $renders[$page['url']] ??= asset('img/pokedex/skins/s/'.$skin['id'].'.webp');
+                    $renders[$page['url']] ??= static::image('skins/s/'.$skin['id'].'.webp');
                 }
             }
         }
