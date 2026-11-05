@@ -47,13 +47,18 @@ class SitemapController extends Controller
         }
 
         $xml = '<?xml version="1.0" encoding="UTF-8"?>'."\n";
-        $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'."\n";
+        $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">'."\n";
 
         foreach ($urls->unique('loc') as $url) {
             $xml .= '  <url><loc>'.htmlspecialchars($url['loc'], ENT_XML1 | ENT_QUOTES, 'UTF-8').'</loc>';
 
             if ($url['lastmod'] instanceof DateTimeInterface) {
                 $xml .= '<lastmod>'.$url['lastmod']->format('Y-m-d\TH:i:sP').'</lastmod>';
+            }
+
+            // Pixelax: picture of the page (Cobblemon render of the Pokédex sheets) for image search
+            if (! empty($url['image'])) {
+                $xml .= '<image:image><image:loc>'.htmlspecialchars($url['image'], ENT_XML1 | ENT_QUOTES, 'UTF-8').'</image:loc></image:image>';
             }
 
             $xml .= '</url>'."\n";
@@ -167,7 +172,10 @@ class SitemapController extends Controller
         $lastmod = Carbon::createFromTimestamp(filemtime(Pokedex::path('index.json')));
 
         return collect(Pokedex::species())
-            ->map(fn (array $pokemon) => $this->url(route('pokedex.show', $pokemon['slug']), $lastmod))
+            ->map(fn (array $pokemon) => [
+                ...$this->url(route('pokedex.show', $pokemon['slug']), $lastmod),
+                'image' => Pokedex::sprite($pokemon['sprite']),
+            ])
             ->prepend($this->url(route('pokedex.index'), $lastmod));
     }
 

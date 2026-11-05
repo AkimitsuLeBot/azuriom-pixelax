@@ -2,6 +2,10 @@ User-agent: *
 Disallow: /admin/
 Disallow: /wiki/search
 Disallow: /shop/cart
+# Pages personnelles des joueurs (connexion requise)
+Disallow: /profile
+Disallow: /notifications
+Disallow: /shop/profile
 
 # Robots d'entrainement d'IA (repris de la liste geree par Cloudflare)
 User-agent: Amazonbot
