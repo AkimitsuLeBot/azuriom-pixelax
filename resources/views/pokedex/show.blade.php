@@ -403,21 +403,24 @@
             </section>
         @endif
 
-        {{-- Skins et variantes du wiki --}}
-        @if(! empty($skins) || ! empty($variants))
+        {{-- Skins du serveur (rendus Cobblemon, liés à leur page wiki quand elle existe), versions customs et fusions --}}
+        @if(! empty($variants))
             <section class="card mb-3 px-dex-section" aria-labelledby="dex-skins">
                 <div class="card-body">
-                    <h2 id="dex-skins"><i class="bi bi-palette" aria-hidden="true"></i> Skins et variantes Pixelax</h2>
+                    <h2 id="dex-skins"><i class="bi bi-palette" aria-hidden="true"></i> Skins, versions et fusions Pixelax</h2>
                     <ul class="px-dex-links">
-                        @foreach(array_merge($variants, $skins) as $entry)
+                        @foreach($variants as $entry)
                             <li>
-                                <a class="px-dex-card" href="{{ $entry['url'] }}">
+                                @php
+                                    $variantTag = $entry['url'] ? 'a' : 'div';
+                                @endphp
+                                <{{ $variantTag }} class="px-dex-card" @if($entry['url']) href="{{ $entry['url'] }}" @endif>
                                     @if($entry['image'])
                                         <img src="{{ $entry['image'] }}" alt="" width="80" height="80" loading="lazy" decoding="async">
                                     @endif
                                     <span class="px-dex-name">{{ $entry['name'] }}</span>
-                                    <span class="px-dex-num">{{ $entry['label'] ?? $entry['group'] }}</span>
-                                </a>
+                                    <span class="px-dex-tag {{ $entry['group'] === 'Skin' ? 'px-dex-tag--skin' : '' }}">{{ $entry['group'] }}</span>
+                                </{{ $variantTag }}>
                             </li>
                         @endforeach
                     </ul>

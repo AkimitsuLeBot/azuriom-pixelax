@@ -791,3 +791,13 @@ a.px-dex-evo-mon:hover {
         border-color: var(--color-primary);
     }
 }
+
+/* Types sous chaque Pokémon de la chaîne d'évolution */
+.px-dex-evo-mon .px-dex-types {
+    margin-top: .25rem;
+}
+
+.px-dex-evo-mon .px-type {
+    padding: 0 .35rem;
+    font-size: .65rem;
+}

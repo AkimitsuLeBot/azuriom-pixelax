@@ -96,6 +96,7 @@
             }
             // Customs puis skins, regroupés par catégorie avec un titre par groupe : ['__h', titre, type]
             $dexGroup = null;
+            $dexRenders = \Azuriom\Support\Pokedex::wikiRenders(); // rendu Cobblemon du skin quand la page wiki en a un
             foreach ($wikiEntries as $entry) {
                 $skin = $entry['kind'] === 'skin';
                 $title = $entry['groupTitle'] ?? $entry['group'];
@@ -103,7 +104,7 @@
                     $dexEntries[] = ['__h', $title, $entry['kind']];
                     $dexGroup = $title;
                 }
-                $dexEntries[] = [$entry['search'], '', '', $entry['kind'], $entry['url'], $entry['label'] ?? $entry['group'], $skin ? 1 : 0, $entry['image'] ?? '', $skin ? 'Skin' : 'Pokémon custom', $entry['name'], 'stars'];
+                $dexEntries[] = [$entry['search'], '', '', $entry['kind'], $entry['url'], $entry['label'] ?? $entry['group'], $skin ? 1 : 0, $dexRenders[$entry['url']] ?? $entry['image'] ?? '', $skin ? 'Skin' : 'Pokémon custom', $entry['name'], 'stars'];
             }
             // Même rendu que le script plus bas (dexCard)
             $dexCard = function (array $e) use ($dexTypes) {

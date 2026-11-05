@@ -13,6 +13,14 @@
         @if(! empty($node['form']))
             <small>{{ $node['form'] }}</small>
         @endif
+        @if(! empty($node['types']))
+            {{-- Types de la forme (ex. Shifours Style Mille Poings : Combat/Eau) --}}
+            <span class="px-dex-types">
+                @foreach($node['types'] as $type)
+                    <span class="px-type px-type--{{ $type }}">{{ \Azuriom\Support\Pokedex::meta()['types'][$type] ?? $type }}</span>
+                @endforeach
+            </span>
+        @endif
     </{{ $evoTag }}>
 
     @if(! empty($node['next']))

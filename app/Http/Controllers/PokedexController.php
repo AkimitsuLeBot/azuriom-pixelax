@@ -36,8 +36,7 @@ class PokedexController extends Controller
             'meta' => Pokedex::meta(),
             'previous' => $position !== false && $position > 0 ? $list[$position - 1] : null,
             'next' => $position !== false ? ($list[$position + 1] ?? null) : null,
-            'skins' => Pokedex::skinsFor($pokemon['name']),
-            'variants' => Pokedex::customVariantsFor($pokemon['name']),
+            'variants' => Pokedex::variantsFor($pokemon),
         ]);
     }
 }

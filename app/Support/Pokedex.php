@@ -122,7 +122,7 @@ class Pokedex
      */
     public static function wikiEntries(): array
     {
-        return Cache::remember('pokedex.wiki.v2', now()->addMinutes(10), function () {
+        return Cache::remember('pokedex.wiki.v3', now()->addMinutes(10), function () {
             try {
                 if (! plugins()->isEnabled('wiki') || ! Schema::hasTable('wiki_pages')) {
                     return [];
@@ -144,9 +144,17 @@ class Pokedex
                     }
 
                     foreach ($category->pages as $page) {
+                        // « Fusion entre Mewtwo & Lugulabre » : les deux Pokémon de la fusion
+                        $text = html_entity_decode(strip_tags(str_replace('<', ' <', (string) $page->content)), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                        $components = preg_match('/Fusion entre\s+(.+?)\s*(?:&|\bet\b)\s*(.+?)\s*(?:Type\b|$|\s{2})/u', $text, $fusion)
+                            ? [trim($fusion[1]), trim($fusion[2])] : [];
+
                         $entries[] = [
                             'name' => $page->title,
                             'kind' => $kind,
+                            'category' => $category->slug,
+                            'key' => static::key($page->slug),
+                            'components' => $components,
                             'group' => $category->name,
                             'groupTitle' => $kind === 'skin' ? 'Skins · '.$category->name : $category->name,
                             'label' => static::CATEGORY_LABELS[$category->slug] ?? preg_replace('/^Pokémon\s+/u', '', $category->name),
@@ -167,27 +175,148 @@ class Pokedex
     }
 
     /**
-     * Skins documented in the wiki for a species, e.g. "Pikachu Gros" for Pikachu.
+     * Comparison key: lowercase letters and digits only ("Pikachu Gros" -> "pikachugros").
      */
-    public static function skinsFor(string $name): array
+    public static function key(string $text): string
     {
-        $prefix = Str::lower(Str::ascii($name)).' ';
-
-        return array_values(array_filter(static::wikiEntries(), function (array $entry) use ($prefix) {
-            return $entry['kind'] === 'skin' && str_starts_with(Str::lower(Str::ascii($entry['name'])), $prefix);
-        }));
+        return preg_replace('/[^a-z0-9]/', '', Str::lower(Str::ascii($text)));
     }
 
     /**
-     * Evolitions-like custom pages named exactly like the species (e.g. "Nymphali" in "Évolitions").
+     * Skins of the server resource pack, by species key: [{id, label, keys}].
      */
-    public static function customVariantsFor(string $name): array
+    public static function packSkins(): array
     {
-        $needle = Str::lower(Str::ascii($name));
+        static $skins = null;
 
-        return array_values(array_filter(static::wikiEntries(), function (array $entry) use ($needle) {
-            return $entry['kind'] === 'custom' && Str::lower(Str::ascii($entry['name'])) === $needle;
-        }));
+        return $skins ??= is_file(static::path('skins.json')) ? json_decode(file_get_contents(static::path('skins.json')), true) : [];
+    }
+
+    /**
+     * The wiki page of a pack skin, if it has one: same name ("Pikachu Gros", "Laboolord"),
+     * or the species' page in the Halloween / Évolitions categories.
+     */
+    protected static function wikiPageFor(array $skin): ?array
+    {
+        static $index = null;
+
+        // Index des pages du wiki par clé (slug et titre), construit une fois par requête
+        if ($index === null) {
+            $index = ['keys' => [], 'halloween' => [], 'evolitions' => []];
+            foreach (static::wikiEntries() as $entry) {
+                $nameKey = static::key($entry['name']);
+                $index['keys'][$entry['key']] ??= $entry;
+                $index['keys'][$nameKey] ??= $entry;
+                if (str_contains($entry['category'], 'halloween')) {
+                    $index['halloween'][] = [$nameKey, $entry];
+                }
+                if ($entry['category'] === 'evolitions') {
+                    $index['evolitions'][$nameKey] ??= $entry;
+                }
+            }
+        }
+
+        foreach ($skin['keys'] as $key) {
+            if (str_starts_with($key, 'halloween:')) {
+                $species = substr($key, 10);
+                foreach ($index['halloween'] as [$nameKey, $entry]) {
+                    if (str_starts_with($nameKey, $species)) {
+                        return $entry;
+                    }
+                }
+            } elseif (str_starts_with($key, 'evolition:')) {
+                if (isset($index['evolitions'][substr($key, 10)])) {
+                    return $index['evolitions'][substr($key, 10)];
+                }
+            } elseif (isset($index['keys'][$key])) {
+                return $index['keys'][$key];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Skins, custom versions and fusions of a species, for its page: renders of the pack skins (with their
+     * wiki page when there is one), then wiki pages of the same Pokémon (type swap, Évolitions, bébés…)
+     * and the fusions made with it.
+     */
+    public static function variantsFor(array $pokemon): array
+    {
+        $name = static::key($pokemon['name']);
+        $used = [];
+        $variants = [];
+
+        foreach (static::packSkins()[$pokemon['key']] ?? [] as $skin) {
+            $page = static::wikiPageFor($skin);
+            if ($page !== null) {
+                $used[] = $page['url'];
+            }
+            $variants[] = [
+                'name' => $page['name'] ?? $pokemon['name'].' '.$skin['label'],
+                'group' => $page !== null ? $page['label'] : 'Skin',
+                'url' => $page['url'] ?? null,
+                'image' => asset('img/pokedex/skins/s/'.$skin['id'].'.webp'),
+            ];
+        }
+
+        foreach (static::wikiEntries() as $entry) {
+            if (in_array($entry['url'], $used, true)) {
+                continue;
+            }
+            $entryName = static::key($entry['name']);
+            $components = array_map([static::class, 'key'], $entry['components'] ?? []);
+            $related = $entryName === $name                                     // type swap, Évolitions
+                || $entryName === 'bebe'.$name                                  // Bébé Keldeo
+                || ($entry['kind'] === 'skin' && str_starts_with($entryName, $name) && $entryName !== $name)
+                || in_array($name, $components, true);                          // fusions avec ce Pokémon
+            if ($related) {
+                $variants[] = [
+                    'name' => $entry['name'],
+                    'group' => in_array($name, $components, true) ? 'Fusion' : $entry['label'],
+                    'url' => $entry['url'],
+                    'image' => static::wikiRenders()[$entry['url']] ?? $entry['image'],
+                ];
+            }
+        }
+
+        return $variants;
+    }
+
+    /**
+     * Render of a pack skin for each wiki page that has one (keyed by page URL), to show the Cobblemon
+     * render in the list instead of the wiki picture.
+     */
+    public static function wikiRenders(): array
+    {
+        static $renders = null;
+
+        if ($renders !== null) {
+            return $renders;
+        }
+
+        $renders = [];
+
+        // Pokémon customs du pack (fusions, type swap, bébés…) : rendu Cobblemon à la place de l'image du wiki
+        $customs = is_file(static::path('customs.json')) ? json_decode(file_get_contents(static::path('customs.json')), true) : [];
+        foreach (static::wikiEntries() as $entry) {
+            $key = $entry['category'] === 'pokemon-type-swap' ? 'swap:'.static::key($entry['name']) : null;
+            $file = $customs[$key] ?? $customs[$entry['key']] ?? $customs[static::key($entry['name'])] ?? null;
+            if ($file !== null) {
+                $renders[$entry['url']] = asset('img/pokedex/custom/s/'.$file.'.webp');
+            }
+        }
+
+        foreach (static::packSkins() as $speciesKey => $skins) {
+            foreach ($skins as $skin) {
+                $page = static::wikiPageFor($skin);
+                if ($page !== null) {
+                    $renders[$page['url']] ??= asset('img/pokedex/skins/s/'.$skin['id'].'.webp');
+                }
+            }
+        }
+
+        return $renders;
     }
 
     protected static function firstImage(string $html): ?string
