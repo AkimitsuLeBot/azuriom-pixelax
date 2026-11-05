@@ -54,9 +54,12 @@ class Pokedex
         return is_file($file) ? json_decode(file_get_contents($file), true) : null;
     }
 
-    public static function sprite(?int $dex): ?string
+    /**
+     * Render of the Cobblemon model: 192 px, or the 128 px thumbnail for lists and small images.
+     */
+    public static function sprite(?int $dex, bool $small = false): ?string
     {
-        return $dex !== null ? asset('img/pokedex/'.$dex.'.webp') : null;
+        return $dex !== null ? asset('img/pokedex/'.($small ? 's/' : '').$dex.'.webp') : null;
     }
 
     /**

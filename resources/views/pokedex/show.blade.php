@@ -49,7 +49,8 @@
 @endpush
 
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('css/pokedex.css') }}?v={{ filemtime(public_path('assets/css/pokedex.css')) }}">
+    {{-- CSS du Pokédex (11 Ko) intégré : une requête bloquante de moins pour l'affichage --}}
+    <style>{!! file_get_contents(public_path('assets/css/pokedex.min.css')) !!}</style>
 @endpush
 
 @section('content')
@@ -105,7 +106,7 @@
             @if($previous)
                 <a href="{{ route('pokedex.show', $previous['slug']) }}" rel="prev">
                     <i class="bi bi-chevron-left" aria-hidden="true"></i>
-                    @if($previous['sprite'])<img src="{{ \Azuriom\Support\Pokedex::sprite($previous['sprite']) }}" alt="" width="32" height="32" loading="lazy">@endif
+                    @if($previous['sprite'])<img src="{{ \Azuriom\Support\Pokedex::sprite($previous['sprite'], true) }}" alt="" width="32" height="32" loading="lazy">@endif
                     {{ $previous['name'] }}
                 </a>
             @else
@@ -115,7 +116,7 @@
             @if($next)
                 <a href="{{ route('pokedex.show', $next['slug']) }}" rel="next">
                     {{ $next['name'] }}
-                    @if($next['sprite'])<img src="{{ \Azuriom\Support\Pokedex::sprite($next['sprite']) }}" alt="" width="32" height="32" loading="lazy">@endif
+                    @if($next['sprite'])<img src="{{ \Azuriom\Support\Pokedex::sprite($next['sprite'], true) }}" alt="" width="32" height="32" loading="lazy">@endif
                     <i class="bi bi-chevron-right" aria-hidden="true"></i>
                 </a>
             @else
@@ -262,13 +263,16 @@
                         <h2 id="dex-stats"><i class="bi bi-bar-chart" aria-hidden="true"></i> Statistiques de base</h2>
                         <dl class="px-dex-stats">
                             @foreach($statLabels as $key => $label)
-                                <dt>{{ $label }}</dt>
-                                <dd>{{ $mon['stats'][$key] ?? '–' }}</dd>
-                                <div class="px-dex-bar" aria-hidden="true"><span style="width: {{ min(100, round(($mon['stats'][$key] ?? 0) / 255 * 100)) }}%; --b: {{ $statColors[$key] }}"></span></div>
+                                <div>
+                                    <dt>{{ $label }}</dt>
+                                    <dd>{{ $mon['stats'][$key] ?? '–' }}</dd>
+                                    <dd class="px-dex-bar" aria-hidden="true"><span style="width: {{ min(100, round(($mon['stats'][$key] ?? 0) / 255 * 100)) }}%; --b: {{ $statColors[$key] }}"></span></dd>
+                                </div>
                             @endforeach
-                            <dt>Total</dt>
-                            <dd><strong>{{ $total }}</strong></dd>
-                            <span></span>
+                            <div>
+                                <dt>Total</dt>
+                                <dd><strong>{{ $total }}</strong></dd>
+                            </div>
                         </dl>
                         @if(! empty($mon['ev']))
                             <p class="px-dex-muted mt-3 mb-0">EV donnés : {{ implode(', ', $mon['ev']) }}</p>

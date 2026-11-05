@@ -7,7 +7,7 @@
         @if($node['slug']) href="{{ route('pokedex.show', $node['slug']) }}" @endif
         @if($node['key'] === $current) aria-current="page" @endif>
         @if($node['dex'])
-            <img src="{{ \Azuriom\Support\Pokedex::sprite($node['dex']) }}" alt="" width="56" height="56" loading="lazy" decoding="async">
+            <img src="{{ \Azuriom\Support\Pokedex::sprite($node['dex'], true) }}" alt="" width="56" height="56" loading="lazy" decoding="async">
         @endif
         {{ $node['name'] }}
         @if(! empty($node['form']))

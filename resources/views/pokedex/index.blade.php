@@ -26,7 +26,8 @@
 @endpush
 
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('css/pokedex.css') }}?v={{ filemtime(public_path('assets/css/pokedex.css')) }}">
+    {{-- CSS du Pokédex (11 Ko) intégré : une requête bloquante de moins pour l'affichage --}}
+    <style>{!! file_get_contents(public_path('assets/css/pokedex.min.css')) !!}</style>
 @endpush
 
 @section('content')
@@ -88,7 +89,7 @@
                         .'<a class="px-dex-card" href="/pokedex/'.e($mon['slug']).'">'
                         .($mon['cat'] && isset($dexCategories[$mon['cat']]) ? '<span class="px-dex-tag">'.e($dexCategories[$mon['cat']]).'</span>' : '')
                         .($mon['sprite']
-                            ? '<img src="/assets/img/pokedex/'.(int) $mon['sprite'].'.webp" alt="" width="72" height="72" loading="lazy" decoding="async">'
+                            ? '<img src="/assets/img/pokedex/s/'.(int) $mon['sprite'].'.webp" alt="" width="72" height="72" loading="lazy" decoding="async">'
                             : '<span class="px-dex-ball" aria-hidden="true"><i class="bi bi-circle-half"></i></span>')
                         .'<span class="px-dex-num">#'.str_pad($mon['dex'], 4, '0', STR_PAD_LEFT).'</span>'
                         .'<span class="px-dex-name">'.e($mon['name']).'</span><span class="px-dex-types">'
