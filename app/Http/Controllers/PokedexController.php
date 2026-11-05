@@ -33,8 +33,8 @@ class PokedexController extends Controller
         return view('pokedex.show', [
             'pokemon' => $pokemon,
             'meta' => Pokedex::meta(),
-            'previous' => $position > 0 ? $list[$position - 1] : null,
-            'next' => $list[$position + 1] ?? null,
+            'previous' => $position !== false && $position > 0 ? $list[$position - 1] : null,
+            'next' => $position !== false ? ($list[$position + 1] ?? null) : null,
             'skins' => Pokedex::skinsFor($pokemon['name']),
             'variants' => Pokedex::customVariantsFor($pokemon['name']),
         ]);

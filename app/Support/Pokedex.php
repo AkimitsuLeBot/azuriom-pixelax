@@ -2,7 +2,6 @@
 
 namespace Azuriom\Support;
 
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
@@ -142,10 +141,5 @@ class Pokedex
         }
 
         return preg_match('#^https://#i', $src) ? $src : null;
-    }
-
-    public static function typeLabel(string $type): string
-    {
-        return Arr::get(static::meta(), 'types.'.$type, Str::ucfirst($type));
     }
 }
