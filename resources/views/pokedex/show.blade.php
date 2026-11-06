@@ -258,9 +258,38 @@
             <section class="card mb-3 px-dex-section" aria-labelledby="dex-evo">
                 <div class="card-body">
                     <h2 id="dex-evo"><i class="bi bi-arrow-repeat" aria-hidden="true"></i> Évolutions</h2>
-                    <div class="px-dex-evo">
+                    <div class="px-dex-evo" id="dexEvo">
                         @include('pokedex._evo', ['node' => $mon['family'], 'current' => $mon['key']])
                     </div>
+                    <script>
+                        // La chaîne reste sur une ligne tant qu'elle tient, sinon elle s'empile de haut en bas.
+                        // Plus de 3 évolutions possibles (Évoli…) : toujours empilée, en grille compacte.
+                        // Exécuté juste après la chaîne pour choisir la disposition avant le premier affichage.
+                        (function () {
+                            const evo = document.getElementById('dexEvo');
+                            const wide = Array.prototype.some.call(evo.querySelectorAll('.px-dex-evo-branch.is-multi'), function (branch) {
+                                return branch.children.length > 3;
+                            });
+                            let width = 0;
+                            const fit = function () {
+                                evo.classList.remove('is-stacked');
+                                evo.classList.toggle('is-stacked', wide || evo.scrollWidth > evo.clientWidth + 1);
+                            };
+                            fit();
+                            if ('ResizeObserver' in window) {
+                                new ResizeObserver(function (entries) {
+                                    const w = Math.round(entries[0].contentRect.width);
+                                    if (w !== width) {
+                                        width = w;
+                                        fit();
+                                    }
+                                }).observe(evo.parentElement);
+                            }
+                            if (document.fonts) {
+                                document.fonts.ready.then(fit);
+                            }
+                        })();
+                    </script>
                 </div>
             </section>
         @endif
