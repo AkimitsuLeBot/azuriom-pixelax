@@ -45,9 +45,15 @@ class Pokedex
         return static::$index = json_decode(file_get_contents(static::path('index.json')), true);
     }
 
+    /**
+     * Pokémon of the Pokédex. The custom Pokémon of the data (fusions of a datapack like Thu-Fi-Zer) are left
+     * out: the customs, fusions and skins really used on the server all have a wiki page, and come from there.
+     */
     public static function species(): array
     {
-        return static::index()['species'];
+        static $species = null;
+
+        return $species ??= array_values(array_filter(static::index()['species'], fn (array $pokemon) => empty($pokemon['custom'])));
     }
 
     public static function meta(): array
@@ -62,8 +68,10 @@ class Pokedex
         }
 
         $file = static::path('species/'.$slug.'.json');
+        $pokemon = is_file($file) ? json_decode(file_get_contents($file), true) : null;
 
-        return is_file($file) ? json_decode(file_get_contents($file), true) : null;
+        // Pokémon custom sans page wiki : pas utilisé sur le serveur, pas de fiche
+        return $pokemon !== null && empty($pokemon['custom']) ? $pokemon : null;
     }
 
     /**
@@ -107,34 +115,12 @@ class Pokedex
     }
 
     /**
-     * Entries shown after the Pokémon in the list: wiki customs and skins grouped by category,
-     * with the custom Pokémon of the data (e.g. Thu-Fi-Zer) added to the group of the same badge.
+     * Entries shown after the Pokémon in the list: the custom Pokémon and skins of the wiki, grouped by
+     * category. Only the wiki counts: a custom or skin without a wiki page is not used on the server.
      */
     public static function extraEntries(): array
     {
-        $entries = static::wikiEntries();
-
-        foreach (static::species() as $pokemon) {
-            if (empty($pokemon['custom'])) {
-                continue;
-            }
-
-            $group = collect($entries)->last(fn ($entry) => $entry['label'] === $pokemon['custom']);
-            $entry = [
-                'name' => $pokemon['name'],
-                'kind' => 'custom',
-                'group' => $group['group'] ?? 'Pokémon customs',
-                'groupTitle' => $group['groupTitle'] ?? 'Pokémon customs',
-                'label' => $pokemon['custom'],
-                'url' => route('pokedex.show', $pokemon['slug']),
-                'image' => static::sprite($pokemon['sprite'], true),
-                'search' => Str::lower(Str::ascii($pokemon['name'].' '.($group['group'] ?? 'custom'))),
-            ];
-            $position = $group !== null ? array_search($group, $entries, true) + 1 : count($entries);
-            array_splice($entries, $position, 0, [$entry]);
-        }
-
-        return $entries;
+        return static::wikiEntries();
     }
 
     /**
@@ -291,8 +277,8 @@ class Pokedex
     }
 
     /**
-     * Skins, custom versions and fusions of a species, for its page: renders of the pack skins (with their
-     * wiki page when there is one), then wiki pages of the same Pokémon (type swap, Évolitions, bébés…)
+     * Skins and custom Pokémon of a species, for its page, all from the wiki: pack skins that have a wiki page
+     * (with their Cobblemon render), then wiki pages of the same Pokémon (type swap, Évolitions, bébés…)
      * and the fusions made with it.
      */
     public static function variantsFor(array $pokemon): array
@@ -301,15 +287,18 @@ class Pokedex
         $used = [];
         $variants = [];
 
+        // Skins du resource pack : seulement ceux qui ont une page wiki (les autres ne sont pas utilisés sur le
+        // serveur), une fois par page (la version Sacha d'un skin renvoie à la même page)
         foreach (static::packSkins()[$pokemon['key']] ?? [] as $skin) {
             $page = static::wikiPageFor($skin);
-            if ($page !== null) {
-                $used[] = $page['url'];
+            if ($page === null || in_array($page['url'], $used, true)) {
+                continue;
             }
+            $used[] = $page['url'];
             $variants[] = [
-                'name' => $page['name'] ?? $pokemon['name'].' '.$skin['label'],
-                'group' => $page !== null ? $page['label'] : 'Skin',
-                'url' => $page['url'] ?? null,
+                'name' => $page['name'],
+                'group' => $page['label'],
+                'url' => $page['url'],
                 'image' => static::image('skins/s/'.$skin['id'].'.webp'),
             ];
         }
