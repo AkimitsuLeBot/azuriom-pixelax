@@ -51,25 +51,25 @@
             </div>
             <label class="visually-hidden" for="dexType">Type</label>
             <select class="form-select" id="dexType">
-                <option value="">Tous les types</option>
+                <option value="">Type</option>
                 @foreach($dexTypes as $type => $label)
                     <option value="{{ $type }}">{{ $label }}</option>
                 @endforeach
             </select>
             <label class="visually-hidden" for="dexGen">Génération</label>
             <select class="form-select" id="dexGen">
-                <option value="">Toutes les générations</option>
+                <option value="">Génération</option>
                 @foreach(range(1, 9) as $gen)
                     <option value="{{ $gen }}">Génération {{ $gen }}</option>
                 @endforeach
             </select>
             <label class="visually-hidden" for="dexKind">Catégorie</label>
             <select class="form-select" id="dexKind">
-                <option value="">Tous les Pokémon</option>
-                <option value="wild">Apparaissent à l’état sauvage</option>
+                <option value="">Catégorie</option>
+                <option value="wild">Sauvages</option>
                 <option value="legend">Légendaires et fabuleux</option>
-                <option value="nowild">Sans apparition sauvage</option>
-                <option value="custom">Pokémon customs Pixelax</option>
+                <option value="nowild">Non sauvages</option>
+                <option value="custom">Customs Pixelax</option>
                 <option value="skin">Skins</option>
             </select>
             <p class="px-dex-count" id="dexCount" aria-live="polite">{{ count(array_filter($species, fn ($m) => empty($m['custom']))) + count($wikiEntries) }} Pokémon</p>

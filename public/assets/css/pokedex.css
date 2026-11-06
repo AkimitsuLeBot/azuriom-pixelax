@@ -74,18 +74,32 @@
     color: var(--color-contrast-medium);
 }
 
+/* Téléphone et tablette : barre compacte (recherche, puis les 3 filtres sur une ligne) qui reste en haut
+   pendant le défilement, sous l'en-tête fixe du site */
 @media (max-width: 767.98px) {
     .px-dex-tools {
-        position: static;
-        grid-template-columns: 1fr 1fr;
+        top: var(--px-nav-h, 48px);
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: .4rem;
+        margin-inline: -.25rem;
+        padding: .5rem;
     }
 
     .px-dex-search {
         grid-column: 1 / -1;
     }
 
-    .px-dex-tools .form-select:last-of-type {
-        grid-column: 1 / -1;
+    .px-dex-tools .form-select {
+        padding: .3rem 1.6rem .3rem .55rem;
+        font-size: .8rem;
+        background-position: right .45rem center;
+        background-size: 12px 9px;
+        text-overflow: ellipsis;
+    }
+
+    .px-dex-count {
+        margin: 0;
+        font-size: .75rem;
     }
 }
 
@@ -185,6 +199,47 @@
 .px-dex-tag--skin {
     color: var(--color-contrast-higher);
     background: var(--color-contrast-low);
+}
+
+/* Téléphone : 3 cartes par ligne au lieu de 2 (trois fois moins de défilement sur 1200 Pokémon) */
+@media (max-width: 575.98px) {
+    .px-dex-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: .4rem;
+    }
+
+    .px-dex-grid > li {
+        contain-intrinsic-size: auto 140px;
+    }
+
+    .px-dex-card {
+        gap: .15rem;
+        padding: .45rem .25rem .5rem;
+        border-radius: .6rem;
+    }
+
+    .px-dex-card img,
+    .px-dex-card .px-dex-ball {
+        width: 60px;
+        height: 60px;
+    }
+
+    .px-dex-card .px-dex-num {
+        font-size: .65rem;
+    }
+
+    .px-dex-card .px-dex-name {
+        font-size: .8rem;
+    }
+
+    .px-dex-card .px-type {
+        padding: 0 .3rem;
+        font-size: .62rem;
+    }
+
+    .px-dex-card .px-dex-tag {
+        font-size: .6rem;
+    }
 }
 
 .px-dex-empty {
@@ -597,6 +652,40 @@ a.px-dex-evo-mon:hover {
     color: var(--color-contrast-medium);
 }
 
+/* Téléphone : la chaîne d'évolution se lit de haut en bas (flèche vers le bas), les branches multiples
+   (Évoli…) côte à côte, au lieu de lignes coupées n'importe où */
+@media (max-width: 575.98px) {
+    .px-dex-evo,
+    .px-dex-evo-step {
+        flex-direction: column;
+        flex-wrap: nowrap;
+    }
+
+    .px-dex-evo {
+        align-items: center;
+    }
+
+    .px-dex-evo-branch {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: .6rem .4rem;
+    }
+
+    .px-dex-evo-how {
+        max-width: 9rem;
+        padding: .1rem 0;
+    }
+
+    .px-dex-evo-how .bi {
+        transform: rotate(90deg);
+    }
+
+    .px-dex-evo-mon {
+        width: 6.5rem;
+    }
+}
+
 /* Statistiques */
 .px-dex-stats {
     display: grid;
@@ -638,7 +727,7 @@ a.px-dex-evo-mon:hover {
 
 .px-dex-facts {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
     gap: .6rem;
     margin: 0;
 }
