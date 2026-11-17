@@ -68,6 +68,7 @@
                 <option value="">Catégorie</option>
                 <option value="wild">Sauvages</option>
                 <option value="legend">Légendaires et fabuleux</option>
+                <option value="zone">Zone Zéro</option>
                 <option value="nowild">Non sauvages</option>
                 <option value="custom">Customs Pixelax</option>
                 <option value="skin">Skins</option>
@@ -85,6 +86,9 @@
                 $kinds = [$mon['wild'] ? 'wild' : 'nowild'];
                 if ($mon['legend'] || in_array($mon['cat'], ['legendary', 'mythical'], true)) {
                     $kinds[] = 'legend';
+                }
+                if (! empty($mon['zone'])) {
+                    $kinds[] = 'zone';
                 }
                 $typeLabels = array_map(fn ($t) => $dexTypes[$t] ?? $t, $mon['types']);
                 $dexEntries[] = [

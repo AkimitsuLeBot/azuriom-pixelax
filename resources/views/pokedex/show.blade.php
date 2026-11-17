@@ -13,9 +13,20 @@
     $shiny = \Azuriom\Support\Pokedex::shiny($mon['sprite']);
 
     // SEO : description propre à chaque Pokémon (où le trouver en premier, c'est ce qu'on cherche)
-    $where = collect($mon['spawns'])->flatMap(fn ($s) => array_column($s['biomes'], 'label'))->unique()->take(3)->implode(', ');
+    // Apparitions dans le monde, puis dans la Zone Zéro (dimension à part, affichée dans son propre bloc)
+    [$zoneSpawns, $worldSpawns] = collect($mon['spawns'])->partition(fn ($s) => ! empty($s['zone']));
+    $spawnGroups = array_filter([
+        ['zone' => false, 'spawns' => $worldSpawns->values()->all()],
+        ['zone' => true, 'spawns' => $zoneSpawns->values()->all()],
+    ], fn ($g) => $g['spawns'] !== []);
+    $where = $worldSpawns->flatMap(fn ($s) => array_column($s['biomes'], 'label'))->unique()->take(3)
+        ->when($zoneSpawns->isNotEmpty(), fn ($c) => $c->push('Zone Zéro'))->implode(', ');
     $rarities = collect($mon['spawns'])->pluck('bucketLabel')->unique()->implode(' / ');
-    if ($where !== '') {
+    if ($worldSpawns->isEmpty() && $zoneSpawns->isNotEmpty()) {
+        // Uniquement dans la Zone Zéro : on nomme ses biomes
+        $zoneBiomes = $zoneSpawns->flatMap(fn ($s) => array_column($s['biomes'], 'label'))->unique()->take(3)->implode(', ');
+        $seoWhere = "apparaît dans la Zone Zéro, {$zoneBiomes} ({$rarities}, niv. ".$zoneSpawns->pluck('level')->first().')';
+    } elseif ($where !== '') {
         $seoWhere = "apparaît dans : {$where} ({$rarities}, niv. ".collect($mon['spawns'])->pluck('level')->first().')';
     } elseif (! empty($mon['legends'])) {
         $seoWhere = 'apparition légendaire aléatoire près des joueurs';
@@ -104,6 +115,9 @@
                         @if($mon['wild'])
                             <span><i class="bi bi-geo-alt" aria-hidden="true"></i> Sauvage sur le serveur</span>
                         @endif
+                        @if(! empty($mon['zone']))
+                            <span><a href="#dex-zone-zero"><i class="bi bi-hexagon" aria-hidden="true"></i> Zone Zéro</a></span>
+                        @endif
                     </div>
                     @if($mon['desc'])
                         <p class="px-dex-desc">{{ $mon['desc'] }}</p>
@@ -139,9 +153,16 @@
             <div class="card-body">
                 <h2 id="dex-where"><i class="bi bi-geo-alt" aria-hidden="true"></i> Où trouver {{ $mon['name'] }}</h2>
 
-                @if(! empty($mon['spawns']))
+                @foreach($spawnGroups as $group)
+                    @if($group['zone'])
+                        <h3 id="dex-zone-zero"><i class="bi bi-hexagon" aria-hidden="true"></i> Dans la Zone Zéro</h3>
+                        <p class="px-dex-muted">
+                            Dimension spéciale du serveur, idéale pour capturer les Pokémon Paradoxe.
+                            Voir la page <a href="{{ url('/wiki/lieux-importants/zone-zero') }}">Zone Zéro</a> du wiki.
+                        </p>
+                    @endif
                     <div class="px-dex-spawns">
-                        @foreach($mon['spawns'] as $spawn)
+                        @foreach($group['spawns'] as $spawn)
                             <article class="px-dex-spawn">
                                 <div class="px-dex-spawn-head">
                                     <span class="px-dex-rarity px-dex-rarity--{{ $spawn['bucket'] }}">{{ $spawn['bucketLabel'] }}</span>
@@ -191,7 +212,7 @@
                             </article>
                         @endforeach
                     </div>
-                @endif
+                @endforeach
 
                 @if(! empty($mon['legends']))
                     <h3>Apparition légendaire</h3>

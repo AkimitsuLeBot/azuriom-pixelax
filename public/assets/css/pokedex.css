@@ -538,6 +538,11 @@
     border-radius: .4rem;
 }
 
+/* Un nom de biome long qui passe à la ligne reste une seule pastille */
+.px-dex-chips span.px-dex-chip {
+    display: inline-block;
+}
+
 details.px-dex-chip {
     padding: 0;
     background: none;
